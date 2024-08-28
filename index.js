@@ -10,7 +10,27 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// CORS Configuration
+app.use(cors({
+  origin: '*', // Allow requests from any origin
+  methods: ['GET', 'POST'], // Allowed HTTP methods
+  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+}));
+
+// Additional headers for preflight requests
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 app.use(bodyParser.json());
 
 // Google Sheets and Drive credentials
@@ -31,7 +51,7 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'shivanshraheja81@gmail.com',
-    pass: 'fvzi qlun sppd hszv'
+    pass: 'fvzi qlun sppd hszv' // Be sure to keep this secure
   }
 });
 
@@ -217,5 +237,5 @@ async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, file
 }
 
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
