@@ -3,8 +3,6 @@ const { google } = require('googleapis');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
-const fs = require('fs');
-const path = require('path');
 const nodemailer = require('nodemailer');
 
 const app = express();
@@ -125,14 +123,10 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
       mimeType: 'application/pdf',
     }, { responseType: 'stream' });
 
-    // Use row index for unique filename
-    const pdfFilePath = path.join('/tmp', `${name}_${certificateNumber}.pdf`);
-    await saveToFile(response.data, pdfFilePath);
+    // Use name and certificate number for the filename
+    const filename = `${name}_${certificateNumber}.pdf`;
 
-    generatedCount++;
-    console.log(`Certificate ${generatedCount} generated out of ${sheetData.length - 1} for ${name} and stored in the tmp directory`);
-
-    // Send email with the certificate attached
+    // Send email with the certificate attached directly from the stream
     await sendEmailWithAttachment(
       email,
       `Luneblaze certificate for the session on ${webinarName}`,
@@ -148,13 +142,17 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
        PFA
        Best Regards,
        Team Luneblaze`,
-      pdfFilePath
+      response.data,
+      filename
     );
     
     await drive.files.update({
       fileId: copyId,
       requestBody: { trashed: true }
     });
+
+    generatedCount++;
+    console.log(`Certificate ${generatedCount} generated out of ${sheetData.length - 1} for ${name} and sent via email.`);
   }
 
   updateGeneratedCount(generatedCount); // Callback to update generated count
@@ -183,18 +181,8 @@ function formatDateToReadable(date) {
   return `${month} ${day}${suffix}, ${year}`;
 }
 
-// Function to save the file stream to a local file
-function saveToFile(stream, filePath) {
-  return new Promise((resolve, reject) => {
-    const writeStream = fs.createWriteStream(filePath);
-    stream.pipe(writeStream);
-    writeStream.on('finish', resolve);
-    writeStream.on('error', reject);
-  });
-}
-
-// Function to send email with PDF attachment
-async function sendEmailWithAttachment(to, subject, htmlContent, attachmentPath) {
+// Function to send email with PDF attachment directly from the stream
+async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, filename) {
   const mailOptions = {
     from: 'shivanshraheja81@gmail.com',
     to: to,
@@ -202,8 +190,9 @@ async function sendEmailWithAttachment(to, subject, htmlContent, attachmentPath)
     html: htmlContent,
     attachments: [
       {
-        filename: path.basename(attachmentPath),
-        path: attachmentPath,
+        filename: filename,
+        content: pdfStream,
+        encoding: 'base64',
         contentType: 'application/pdf'
       }
     ]
