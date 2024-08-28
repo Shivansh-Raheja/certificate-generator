@@ -10,14 +10,13 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CORS Configuration
 app.use(cors({
-  origin: '*', // Allow requests from any origin
-  methods: ['GET', 'POST'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
+  origin: '*', 
+  methods: ['GET', 'POST'], 
+  allowedHeaders: ['Content-Type', 'Authorization'] 
 }));
 
-// Additional headers for preflight requests
+
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST');
