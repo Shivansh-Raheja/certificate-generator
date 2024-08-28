@@ -10,25 +10,12 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// CORS configuration using the cors package
 app.use(cors({
-  origin: 'http://localhost:3000', 
-  methods: ['GET', 'POST'], 
-  allowedHeaders: ['Content-Type', 'Authorization'] 
+  origin: 'http://localhost:3000', // Allow requests from this origin
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.header('Access-Control-Allow-Methods', 'GET, POST');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
 
 app.use(bodyParser.json());
 
@@ -232,9 +219,10 @@ async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, file
     ]
   };
 
-  return transporter.sendMail(mailOptions);
+  await transporter.sendMail(mailOptions);
 }
 
+// Start server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });
