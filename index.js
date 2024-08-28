@@ -54,7 +54,7 @@ const transporter = nodemailer.createTransport({
 const logFilePath = path.join(__dirname, 'logs.json');
 
 // Route to generate certificates
-app.post('/generate-certificates', async (req, res) => {
+app.post('/generate-certificates', cors(corsOptions),async (req, res) => {
   const { sheetId, sheetName, webinarName, date, organizedBy } = req.body;
 
   if (!sheetId || !sheetName || !webinarName || !date || !organizedBy) {
