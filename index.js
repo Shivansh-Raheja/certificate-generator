@@ -4,6 +4,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -26,12 +28,15 @@ const slides = google.slides({ version: 'v1', auth: oauth2Client });
 
 // Nodemailer configuration
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // You can use other email services as well
+  service: 'gmail',
   auth: {
-    user: 'shivanshraheja81@gmail.com', // Replace with your email
-    pass: 'fvzi qlun sppd hszv'   // Replace with your app password
+    user: 'shivanshraheja81@gmail.com',
+    pass: 'fvzi qlun sppd hszv'
   }
 });
+
+// Log file path
+const logFilePath = path.join(__dirname, 'logs.json');
 
 // Route to generate certificates
 app.post('/generate-certificates', async (req, res) => {
@@ -43,17 +48,31 @@ app.post('/generate-certificates', async (req, res) => {
 
   try {
     const sheetData = await getSheetData(sheetId, sheetName);
-    const totalCertificates = sheetData.length - 1; // Exclude header row
+    const totalCertificates = sheetData.length - 1;
     let certificatesGenerated = 0;
 
     await generateCertificates(sheetData, webinarName, date, organizedBy, (generatedCount) => {
       certificatesGenerated = generatedCount;
     });
 
+    // Update log
+    const logData = { totalCertificates, certificatesGenerated };
+    fs.writeFileSync(logFilePath, JSON.stringify(logData));
+
     res.json({ status: 'success', message: 'Certificates generated successfully!', totalCertificates, certificatesGenerated });
   } catch (error) {
     console.error('Error in /generate-certificates:', error);
     res.status(500).json({ status: 'error', message: 'An error occurred while generating certificates. Please check the server logs.' });
+  }
+});
+
+// Route to fetch logs
+app.get('/fetch-logs', (req, res) => {
+  if (fs.existsSync(logFilePath)) {
+    const logData = JSON.parse(fs.readFileSync(logFilePath, 'utf8'));
+    res.json(logData);
+  } else {
+    res.status(404).json({ status: 'error', message: 'Log file not found.' });
   }
 });
 
@@ -78,13 +97,12 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
 
   for (let i = 1; i < sheetData.length; i++) {
     const row = sheetData[i];
-    const name = row[1]?.toString() || '';
-    const schoolName = row[4]?.toString().toUpperCase() || '';
-    const email = row[2]?.toString() || '';
-    const location = row[5]?.toString().toUpperCase() || '';
-    const certificateNumber = row[6]?.toString().toUpperCase() || '';
+    const name = row[0]?.toString() || '';
+    const schoolName = row[2]?.toString().toUpperCase() || '';
+    const email = row[1]?.toString() || '';
+    const certificateNumber = row[3]?.toString().toUpperCase() || '';
 
-    if (!name || !schoolName || !email || !location || !certificateNumber) {
+    if (!name || !schoolName || !email || !certificateNumber) {
       console.log(`Skipping row ${i + 1} due to missing data.`);
       continue;
     }
@@ -111,7 +129,6 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
           { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName } },
           { replaceAllText: { containsText: { text: '{{Date}}' }, replaceText: formattedDate } },
           { replaceAllText: { containsText: { text: '{{OrganizedBy}}' }, replaceText: organizedBy } },
-          { replaceAllText: { containsText: { text: '{{Location}}' }, replaceText: location } },
           { replaceAllText: { containsText: { text: '{{CERT-NUMBER}}' }, replaceText: certificateNumber } }
         ],
       },
@@ -123,10 +140,8 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
       mimeType: 'application/pdf',
     }, { responseType: 'stream' });
 
-    // Use name and certificate number for the filename
     const filename = `${name}_${certificateNumber}.pdf`;
 
-    // Send email with the certificate attached directly from the stream
     await sendEmailWithAttachment(
       email,
       `Luneblaze certificate for the session on ${webinarName}`,
