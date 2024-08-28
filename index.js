@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-    origin: '*',
+    origin: 'http://localhost:3000',
     credentials: true,
     optionSuccessStatus: 200
 }
@@ -19,7 +19,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.use(function (req, res, next) {
-    res.header('Access-Control-Allow-Origin', "*");
+    res.header('Access-Control-Allow-Origin', "http://localhost:3000");
     res.header('Access-Control-Allow-Headers', true);
     res.header('Access-Control-Allow-Credentials', true);
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
