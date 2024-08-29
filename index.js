@@ -140,9 +140,9 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
         requests: [
           { replaceAllText: { containsText: { text: '{{Name}}' }, replaceText: name } },
           { replaceAllText: { containsText: { text: '{{SchoolName}}' }, replaceText: schoolName } },
-          { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName } },
+          { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName.toUpperCase() } },
           { replaceAllText: { containsText: { text: '{{Date}}' }, replaceText: formattedDate } },
-          { replaceAllText: { containsText: { text: '{{OrganizedBy}}' }, replaceText: organizedBy } },
+          { replaceAllText: { containsText: { text: '{{OrganizedBy}}' }, replaceText: organizedBy.toUpperCase() } },
           { replaceAllText: { containsText: { text: '{{CERT-NUMBER}}' }, replaceText: certificateNumber } }
         ],
       },
@@ -156,13 +156,20 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
 
     const filename = `${name}_${certificateNumber}.pdf`;
 
+    function capitalizeWords(webinarName) {
+      return webinarName.replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    let formattedWebinarName = capitalizeWords(webinarName);
+    
+
     await sendEmailWithAttachment(
       email,
-      `Luneblaze certificate for the session on ${webinarName.toLowerCase()}`,
+      `Luneblaze certificate for the session on ${formattedWebinarName}`,
       `Dear Educator,<br><br>
        Greetings of the day!!<br><br>
        Hope you are doing well.<br><br>
-       This email is to acknowledge your participation in the <b>${webinarName}</b> Session held on <b>${date}</b>, organised by Luneblaze. Please find your Participation Certificate attached.<br><br>
+       This email is to acknowledge your participation in the <b>${webinarName.toUpperCase()}</b> Session held on <b>${date}</b>, organised by Luneblaze. Please find your Participation Certificate attached.<br><br>
        We organise sessions focusing on SQAAF every month.<br><br>
        Luneblaze is also helping 100+ schools in their SQAAF Journey by assisting in documentation, implementation and self-assessment.<br><br>
        We would like to discuss the possibility of helping your esteemed institution in the SQAAF Implementation journey.<br><br>
