@@ -44,8 +44,8 @@ const slides = google.slides({ version: 'v1', auth: oauth2Client });
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'shivanshraheja81@gmail.com',
-    pass: 'fvzi qlun sppd hszv' // Be sure to keep this secure
+    user: process.env.EMAIL,
+    pass: process.env.PASSWORD 
   }
 });
 
@@ -213,7 +213,7 @@ function formatDateToReadable(date) {
 // Function to send email with PDF attachment directly from the stream
 async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, filename) {
   const mailOptions = {
-    from: 'shivanshraheja81@gmail.com',
+    from: process.env.EMAIL,
     to: to,
     subject: subject,
     html: htmlContent,
