@@ -99,7 +99,7 @@ async function getSheetData(sheetId, sheetName) {
   return response.data.values;
 }
 
-// Function to generate certificates
+// Function to generate certificates with a delay
 async function generateCertificates(sheetData, webinarName, date, organizedBy, updateGeneratedCount) {
   if (!Array.isArray(sheetData) || sheetData.length === 0) {
     throw new Error('No data found in the Google Sheet.');
@@ -161,7 +161,6 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
     }
 
     let formattedWebinarName = capitalizeWords(webinarName);
-    
 
     await sendEmailWithAttachment(
       email,
@@ -181,7 +180,7 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
       response.data,
       filename
     );
-    
+
     await drive.files.update({
       fileId: copyId,
       requestBody: { trashed: true }
@@ -189,9 +188,12 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
 
     generatedCount++;
     console.log(`Certificate ${generatedCount} generated out of ${sheetData.length - 1} for ${name} and sent via email.`);
-  }
 
-  updateGeneratedCount(generatedCount); // Callback to update generated count
+    updateGeneratedCount(generatedCount); // Callback to update generated count
+
+    // Introduce a 5-second delay before processing the next certificate
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
 }
 
 // Function to format date to a readable format
@@ -228,7 +230,6 @@ async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, file
       {
         filename: filename,
         content: pdfStream,
-        encoding: 'base64',
         contentType: 'application/pdf'
       }
     ]
@@ -237,7 +238,6 @@ async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, file
   await transporter.sendMail(mailOptions);
 }
 
-// Start server
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
