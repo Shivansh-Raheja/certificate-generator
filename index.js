@@ -12,18 +12,10 @@ const port = process.env.PORT || 3000;
 
 // CORS configuration using the cors package
 app.use(cors({
-  origin: '*', // Allow requests from this origin
+  origin: '*',
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', "*");
-  res.header('Access-Control-Allow-Headers', true);
-  res.header('Access-Control-Allow-Credentials', true);
-  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-  next();
-});
 
 app.use(bodyParser.json());
 
@@ -45,12 +37,12 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: process.env.EMAIL,
-    pass: process.env.PASSWORD 
+    pass: process.env.PASSWORD
   }
 });
 
 // Log file path
-const logFilePath = path.join(__dirname, 'logs.json');
+const logFilePath = path.join(__dirname, 'progress.json');
 
 // Route to generate certificates
 app.post('/generate-certificates', async (req, res) => {
@@ -63,25 +55,27 @@ app.post('/generate-certificates', async (req, res) => {
   try {
     const sheetData = await getSheetData(sheetId, sheetName);
     const totalCertificates = sheetData.length - 1;
-    let certificatesGenerated = 0;
+
+    // Initialize progress and generated count
+    fs.writeFileSync(logFilePath, JSON.stringify({ progress: 0, totalCertificates, generatedCount: 0 }));
 
     await generateCertificates(sheetData, webinarName, date, organizedBy, (generatedCount) => {
-      certificatesGenerated = generatedCount;
+      const progress = calculatePercentage(generatedCount, totalCertificates);
+      fs.writeFileSync(logFilePath, JSON.stringify({ progress, totalCertificates, generatedCount }));
     });
 
-    // Update log
-    const logData = { totalCertificates, certificatesGenerated };
-    fs.writeFileSync(logFilePath, JSON.stringify(logData));
+    // Reset progress and generated count after completion
+    fs.writeFileSync(logFilePath, JSON.stringify({ progress: 0, totalCertificates, generatedCount: 0 }));
 
-    res.json({ status: 'success', message: 'Certificates generated successfully!', totalCertificates, certificatesGenerated });
+    res.json({ status: 'success', message: 'Certificates generation started successfully!' });
   } catch (error) {
     console.error('Error in /generate-certificates:', error);
     res.status(500).json({ status: 'error', message: 'An error occurred while generating certificates. Please check the server logs.' });
   }
 });
 
-// Route to fetch logs
-app.get('/fetch-logs', (req, res) => {
+// Route to fetch progress
+app.get('/fetch-progress', (req, res) => {
   if (fs.existsSync(logFilePath)) {
     const logData = JSON.parse(fs.readFileSync(logFilePath, 'utf8'));
     res.json(logData);
@@ -196,6 +190,12 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
   }
 }
 
+// Function to calculate percentage
+function calculatePercentage(current, total) {
+  if (!total) return 0;
+  return ((current / total) * 100).toFixed(2);
+}
+
 // Function to format date to a readable format
 function formatDateToReadable(date) {
   const monthNames = [
@@ -223,21 +223,27 @@ function formatDateToReadable(date) {
 async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, filename) {
   const mailOptions = {
     from: process.env.EMAIL,
-    to: to,
-    subject: subject,
+    to,
+    subject,
     html: htmlContent,
     attachments: [
       {
-        filename: filename,
+        filename,
         content: pdfStream,
         contentType: 'application/pdf'
       }
     ]
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${to}`);
+  } catch (error) {
+    console.error(`Error sending email to ${to}:`, error);
+  }
 }
 
+// Start the server
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on port no:${port}`);
 });
