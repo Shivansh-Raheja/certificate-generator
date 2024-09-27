@@ -93,6 +93,13 @@ async function getSheetData(sheetId, sheetName) {
   return response.data.values;
 }
 
+function toCamelCase(str) {
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 // Function to generate certificates with a delay
 async function generateCertificates(sheetData, webinarName, date, organizedBy, updateGeneratedCount) {
   if (!Array.isArray(sheetData) || sheetData.length === 0) {
@@ -115,6 +122,7 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
       continue;
     }
 
+    newname = toCamelCase(name);
     console.log(`Generating certificate ${i} of ${sheetData.length - 1} for ${name}...`);
     const formattedDate = formatDateToReadable(new Date(date));
 
@@ -132,7 +140,7 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
       presentationId: copyId,
       requestBody: {
         requests: [
-          { replaceAllText: { containsText: { text: '{{Name}}' }, replaceText: name } },
+          { replaceAllText: { containsText: { text: '{{Name}}' }, replaceText: newname } },
           { replaceAllText: { containsText: { text: '{{SchoolName}}' }, replaceText: schoolName } },
           { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName.toUpperCase() } },
           { replaceAllText: { containsText: { text: '{{Date}}' }, replaceText: formattedDate } },
