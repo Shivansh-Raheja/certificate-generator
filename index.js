@@ -166,12 +166,12 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
 
     await sendEmailWithAttachment(
       email,
-      `Luneblaze certificate for the session on ${formattedWebinarName}`,
+      `Luneblaze certificate for the webinar on ${formattedWebinarName}`,
       `Dear Educator,<br><br>
        Greetings of the day!!<br><br>
        Hope you are doing well.<br><br>
-       This email is to acknowledge your participation in the <b>${webinarName.toUpperCase()}</b> Session held on <b>${date}</b>, organised by Luneblaze. Please find your Participation Certificate attached.<br><br>
-       We organise sessions focusing on SQAAF every month.<br><br>
+       This email is to acknowledge your participation in the <b>${webinarName.toUpperCase()}</b> Webinar held on <b>${date}</b>, organised by Luneblaze. Please find your Participation Certificate attached.<br><br>
+       We organise webinars focusing on SQAAF every month.<br><br>
        Luneblaze is also helping 100+ schools in their SQAAF Journey by assisting in documentation, implementation and self-assessment.<br><br>
        We would like to discuss the possibility of helping your esteemed institution in the SQAAF Implementation journey.<br><br>
        For more details reach out to us at: <b>+91 7838281785</b><br><br>
