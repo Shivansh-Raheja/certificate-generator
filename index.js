@@ -135,16 +135,21 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
     });
 
     const copyId = copyFile.data.id;
+     const titleCase = schoolName
+  .toLowerCase()
+  .split(' ')
+  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+  .join(' ');
 
     await slides.presentations.batchUpdate({
       presentationId: copyId,
       requestBody: {
         requests: [
           { replaceAllText: { containsText: { text: '{{Name}}' }, replaceText: newname } },
-          { replaceAllText: { containsText: { text: '{{SchoolName}}' }, replaceText: schoolName } },
+          { replaceAllText: { containsText: { text: '{{SchoolName}}' }, replaceText: titleCase } },
           { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName } },
           { replaceAllText: { containsText: { text: '{{Date}}' }, replaceText: formattedDate } },
-          { replaceAllText: { containsText: { text: '{{SpeakerName}}' }, replaceText: organizedBy.toUpperCase() } },
+          { replaceAllText: { containsText: { text: '{{SpeakerName}}' }, replaceText: organizedBy } },
           { replaceAllText: { containsText: { text: '{{CERT-NUMBER}}' }, replaceText: certificateNumber } }
         ],
       },
