@@ -142,9 +142,9 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
         requests: [
           { replaceAllText: { containsText: { text: '{{Name}}' }, replaceText: newname } },
           { replaceAllText: { containsText: { text: '{{SchoolName}}' }, replaceText: schoolName } },
-          { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName.toUpperCase() } },
+          { replaceAllText: { containsText: { text: '{{WebinarName}}' }, replaceText: webinarName } },
           { replaceAllText: { containsText: { text: '{{Date}}' }, replaceText: formattedDate } },
-          { replaceAllText: { containsText: { text: '{{OrganizedBy}}' }, replaceText: organizedBy.toUpperCase() } },
+          { replaceAllText: { containsText: { text: '{{SpeakerName}}' }, replaceText: organizedBy.toUpperCase() } },
           { replaceAllText: { containsText: { text: '{{CERT-NUMBER}}' }, replaceText: certificateNumber } }
         ],
       },
