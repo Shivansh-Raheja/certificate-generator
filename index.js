@@ -235,18 +235,18 @@ function formatDateToReadable(date) {
 // Function to send email with PDF attachment directly from the stream
 async function sendEmailWithAttachment(to, subject, htmlContent, pdfStream, filename) {
   const mailOptions = {
-    from: process.env.EMAIL,
-    to,
-    subject,
-    html: htmlContent,
-    attachments: [
-      {
-        filename,
-        content: pdfStream,
-        contentType: 'application/pdf'
-      }
-    ]
-  };
+  from: `"Luneblaze-Webinars" <${process.env.EMAIL}>`,
+  to,
+  subject,
+  html: htmlContent,
+  attachments: [
+    {
+      filename,
+      content: pdfStream,
+      contentType: 'application/pdf'
+    }
+  ]
+};
 
   try {
     await transporter.sendMail(mailOptions);
