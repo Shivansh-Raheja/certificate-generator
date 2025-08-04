@@ -179,7 +179,7 @@ async function generateCertificates(sheetData, webinarName, date, organizedBy, u
        We organise webinars focusing on SQAAF every month.<br><br>
        Luneblaze is also helping 100+ schools in their SQAAF Journey by assisting in documentation, implementation and self-assessment.<br><br>
        We would like to discuss the possibility of helping your esteemed institution in the SQAAF Implementation journey.<br><br>
-       For more details reach out to us at: <b>+91 7838281785</b><br><br>
+       For more details reach out to us at: <b>+91 8810418840</b><br><br>
        Looking forward to the opportunity to support your accreditation needs.<br><br>
        PFA<br><br>
        Best Regards<br><br>
